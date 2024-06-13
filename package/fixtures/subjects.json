@@ -1,0 +1,23 @@
+[
+{
+  "model": "package.typepackage",
+  "pk": 1,
+  "fields": {
+    "name": "CL"
+  }
+},
+{
+  "model": "package.typepackage",
+  "pk": 2,
+  "fields": {
+    "name": "EL"
+  }
+},
+{
+  "model": "package.typepackage",
+  "pk": 3,
+  "fields": {
+    "name": "VR"
+  }
+}
+]

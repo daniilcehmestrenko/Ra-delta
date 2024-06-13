@@ -1,0 +1,79 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c 'python manage.py migrate && python manage.py loaddata subjects.json && python manage.py runserver 0.0.0.0:8000'
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - django-net
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql
+    networks:
+      - django-net
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: "radelta"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+
+  redis:
+    image: redis
+    restart: unless-stopped
+    networks:
+      - django-net
+
+  rabbit:
+    image: rabbitmq
+    hostname: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+      - RABBITMQ_DEFAULT_VHOST=/
+    ports:
+      - "5682:5672"
+      - "15682:15672"
+    networks:
+      - django-net
+
+  celery:
+    build: .
+    command: celery --app=config worker --loglevel=info
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - rabbit
+      - db
+    networks:
+      - django-net
+
+  celery-beat:
+    build: .
+    command: celery -A config beat -l INFO
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - rabbit
+      - db
+    networks:
+      - django-net
+
+networks:
+  django-net:
+    driver: bridge
