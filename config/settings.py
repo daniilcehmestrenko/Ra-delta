@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 
     'django_celery_beat',
     'rest_framework',
+    'django_filters',
 
     'package',
 ]
@@ -82,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ.get('DB_NAME', 'ra_delta'),
         'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': '',
+        'PASSWORD': '1234',
         'HOST': os.environ.get('DB_HOST', ''),
         'PORT': os.environ.get('DB_PORT', '3306'),
     }
@@ -90,7 +91,8 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 

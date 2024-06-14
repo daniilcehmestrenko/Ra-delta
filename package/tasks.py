@@ -6,9 +6,24 @@ import requests
 from django.core.cache import cache
 
 from config.celery import app
+from package.models import Package
+from package.service import delivery_cost_calculation
 
 
 logger = logging.getLogger('main')
+
+
+@app.task
+def calculate_delivery_cost_for_all_packages_task():
+    usd_rate_in_rub = cache.get('usd_rate_in_rub')
+    if usd_rate_in_rub is None:
+        usd_rate_in_rub = update_usd_rate_in_rub_task()
+    if usd_rate_in_rub is not None:
+        packages = Package.objects.filter(delivery_cost__isnull=True)
+        for package in packages:
+            package.delivery_cost = delivery_cost_calculation(package.weight, package.cost_in_usd, usd_rate_in_rub)
+        return Package.objects.bulk_update(packages, ['delivery_cost'])
+    logger.warning('usd rate is None, delivery cost not calculated!')
 
 
 @app.task

@@ -12,7 +12,7 @@ class ListPackageSerializer(serializers.ModelSerializer):
     delivery_cost = serializers.SerializerMethodField('delivery_cost_info')
 
     def delivery_cost_info(self, obj):
-        return obj.delivery_cost if obj.delivery_cost else 'Не рассчитано'
+        return obj.delivery_cost or 'Не рассчитано'
 
     class Meta:
         model = Package
